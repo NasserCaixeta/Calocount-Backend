@@ -1,3 +1,5 @@
+from google.genai.errors import ClientError, ServerError
+
 from fastapi import APIRouter, HTTPException, UploadFile, File, status
 
 from app.core.deps import CurrentUser
@@ -29,6 +31,22 @@ async def analyze_meal(
             detail="Imagem muito grande. Tamanho máximo: 10MB.",
         )
 
-    result = analyze_meal_photo.delay(image_bytes, file.content_type).get()
+    try:
+        result = analyze_meal_photo.delay(image_bytes, file.content_type).get()
+    except ClientError as exc:
+        if exc.code == 429:
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Cota da API Gemini esgotada. Tente novamente em alguns instantes.",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Erro na API Gemini: {exc}",
+        )
+    except ServerError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="API Gemini temporariamente indisponível. Tente novamente em alguns segundos.",
+        )
 
     return MealAnalysisResult(**result)

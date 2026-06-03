@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080
 
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_MODEL: str = "gemini-flash-latest"
 
     @property
     def DATABASE_URL(self) -> str:
