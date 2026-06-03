@@ -37,7 +37,7 @@ Edite o `.env` com suas credenciais de MySQL, Redis e Gemini API Key.
 ### 4. Criar o banco de dados MySQL
 
 ```sql
-CREATE DATABASE calocount CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE calocount CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;.
 ```
 
 ### 5. Rodar a aplicação
