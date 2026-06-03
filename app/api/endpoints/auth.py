@@ -7,7 +7,7 @@ from app.core.deps import CurrentUser
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_db
 from app.models.user import User
-from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
+from app.schemas.auth import ChangePasswordRequest, LoginRequest, RegisterRequest, TokenResponse
 from app.schemas.user import UserOut, UserUpdate
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -29,6 +29,7 @@ def register(
         name=payload.name,
         email=payload.email,
         password_hash=hash_password(payload.password),
+        daily_calorie_goal=payload.daily_calorie_goal,
     )
     db.add(user)
     db.commit()
@@ -71,3 +72,27 @@ def update_me(
     db.commit()
     db.refresh(current_user)
     return current_user
+
+
+@router.post("/me/change-password", status_code=status.HTTP_204_NO_CONTENT)
+def change_password(
+    payload: ChangePasswordRequest,
+    current_user: CurrentUser,
+    db: Annotated[Session, Depends(get_db)],
+) -> None:
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Senha atual incorreta.",
+        )
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_account(
+    current_user: CurrentUser,
+    db: Annotated[Session, Depends(get_db)],
+) -> None:
+    db.delete(current_user)
+    db.commit()

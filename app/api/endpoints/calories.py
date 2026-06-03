@@ -23,6 +23,10 @@ def create_log(
         user_id=current_user.id,
         meal_name=payload.meal_name,
         calories=payload.calories,
+        protein_g=payload.protein_g,
+        carbs_g=payload.carbs_g,
+        fat_g=payload.fat_g,
+        via=payload.via,
         log_date=payload.log_date,
         notes=payload.notes,
     )
