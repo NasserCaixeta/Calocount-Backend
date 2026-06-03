@@ -8,7 +8,7 @@ from app.core.security import create_access_token, hash_password, verify_passwor
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
-from app.schemas.user import UserOut
+from app.schemas.user import UserOut, UserUpdate
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -55,4 +55,19 @@ def login(
 
 @router.get("/me", response_model=UserOut)
 def me(current_user: CurrentUser) -> User:
+    return current_user
+
+
+@router.patch("/me", response_model=UserOut)
+def update_me(
+    payload: UserUpdate,
+    current_user: CurrentUser,
+    db: Annotated[Session, Depends(get_db)],
+) -> User:
+    if payload.name is not None:
+        current_user.name = payload.name
+    if payload.daily_calorie_goal is not None:
+        current_user.daily_calorie_goal = payload.daily_calorie_goal
+    db.commit()
+    db.refresh(current_user)
     return current_user
